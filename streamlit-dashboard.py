@@ -3,6 +3,8 @@ import pandas as pd
 import datetime
 from datetime import datetime as dt, timedelta
 import time
+import plotly.graph_objects as go
+import plotly.express as px
 
 # Try to import streamlit-mermaid if available, otherwise use simple visualization
 try:
@@ -840,9 +842,6 @@ def get_default_data_for_client(client_name, start_date):
 
 def display_dashboard(client_name):
     """Render professional dashboard for ENBD/EIB"""
-    import plotly.graph_objects as go
-    import plotly.express as px
-    
     # Use per-client payment_data and ptp_data from session state
     payment_data = st.session_state.get(f"{client_name}_payment_data", pd.DataFrame())
     ptp_data = st.session_state.get(f"{client_name}_ptp_data", pd.DataFrame())
