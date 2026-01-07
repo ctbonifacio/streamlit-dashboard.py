@@ -1100,13 +1100,13 @@ def display_dashboard(client_name):
 # └─────────────────────────────────────────────────────────────────────────────────┘
 
 def payment_monitoring_tab_enbd(client_name="ENBD"):
-    """Editable payment monitoring data sheet"""
+    """Payment monitoring sheet (read-only grid; add/delete only)"""
     st.subheader(f"💳 {client_name} - Payment Monitoring Sheet")
     st.info("📌 Data is grouped by **DATE** column. **POSTED AED** values are summed per date for Payment charts")
-    
+
     # Use client-specific session state keys
     session_key = f"{client_name}_payment_data"
-    
+
     # Initialize payment data in session state if not exists
     if session_key not in st.session_state:
         st.session_state[session_key] = pd.DataFrame({
@@ -1127,37 +1127,56 @@ def payment_monitoring_tab_enbd(client_name="ENBD"):
             'CF AMT': [],
             'MONTH': []
         })
-    
+
     col1, col2 = st.columns([3, 1])
 
- 
-
     with col1:
-        st.markdown("**Edit payment data directly below:**")
+        st.markdown("**Manage payment records (read-only grid).**")
 
-    with col2:
-        if st.button("➕ Add Row", key=f"add_payment_row_{client_name}"):
-            new_row = {col: '' for col in st.session_state[session_key].columns}
-            # set MONTH for new row to current month from session state
-            if 'MONTH' in new_row:
-                new_row['MONTH'] = st.session_state.start_date.strftime('%Y-%m')
-            st.session_state[session_key] = pd.concat(
-                [st.session_state[session_key], pd.DataFrame([new_row])],
-                ignore_index=True
-            )
-            st.rerun()
-    
-    # Editable data grid
-    edited_payment_data = st.data_editor(
-        st.session_state[session_key],
-        key=f"payment_data_editor_{client_name}",
-        use_container_width=True,
-        height=500,
-        num_rows="dynamic"
-    )
-    
-    # Update session state
-    st.session_state[session_key] = edited_payment_data
+    # Add Details form in an expander
+    with st.expander("➕ Add Details"):
+        with st.form(f"add_payment_details_{client_name}"):
+            new_vals = {}
+            for col in st.session_state[session_key].columns:
+                # Use text inputs for all fields to keep this generic
+                new_vals[col] = st.text_input(col)
+            submitted = st.form_submit_button("Add Record")
+            if submitted:
+                new_row = {col: new_vals.get(col, '') for col in st.session_state[session_key].columns}
+                # default MONTH if present
+                if 'MONTH' in new_row and not new_row['MONTH']:
+                    new_row['MONTH'] = st.session_state.start_date.strftime('%Y-%m')
+                st.session_state[session_key] = pd.concat(
+                    [st.session_state[session_key], pd.DataFrame([new_row])],
+                    ignore_index=True
+                )
+                st.success("✓ Record added")
+                st.rerun()
+
+    # Display read-only grid
+    st.dataframe(st.session_state[session_key], use_container_width=True, height=500)
+
+    # Deletion controls
+    if not st.session_state[session_key].empty:
+        # Build human-friendly labels for rows
+        def _row_label(i, row):
+            label_field = None
+            for cand in ['AGREEMENT NO', 'AGREEMENT ID', 'AGREEMENT', 'CIF NO']:
+                if cand in st.session_state[session_key].columns:
+                    label_field = cand
+                    break
+            label_val = str(row[label_field]) if label_field else str(i)
+            return f"{i} - {label_val}"
+
+        options = [_row_label(i, st.session_state[session_key].iloc[i]) for i in range(len(st.session_state[session_key]))]
+        to_delete = st.multiselect("Select rows to delete", options, key=f"delete_payment_rows_{client_name}")
+        if st.button("🗑️ Delete Selected", key=f"delete_payment_btn_{client_name}"):
+            if to_delete:
+                # parse indices and drop
+                indices = [int(x.split(' - ')[0]) for x in to_delete]
+                st.session_state[session_key] = st.session_state[session_key].drop(index=indices).reset_index(drop=True)
+                st.success(f"✓ Deleted {len(indices)} row(s)")
+                st.rerun()
     
     col1, col2, col3 = st.columns(3)
     
@@ -1182,13 +1201,13 @@ def payment_monitoring_tab_enbd(client_name="ENBD"):
             st.metric("Total Posted AED", "AED 0.00")
 
 def payment_monitoring_tab_eib(client_name="EIB"):
-    """Editable payment monitoring data sheet"""
+    """Payment monitoring sheet (read-only grid; add/delete only)"""
     st.subheader(f"💳 {client_name} - Payment Monitoring Sheet")
     st.info("📌 Data is grouped by **DATE** column. **POSTED AED** values are summed per date for Payment charts")
-    
+
     # Use client-specific session state keys
     session_key = f"{client_name}_payment_data"
-    
+
     # Initialize payment data in session state if not exists
     if session_key not in st.session_state:
         st.session_state[session_key] = pd.DataFrame({
@@ -1209,37 +1228,56 @@ def payment_monitoring_tab_eib(client_name="EIB"):
             'CF AMT': [],
             'MONTH': []
         })
-    
+
     col1, col2 = st.columns([3, 1])
 
- 
-
     with col1:
-        st.markdown("**Edit payment data directly below:**")
+        st.markdown("**Manage payment records (read-only grid).**")
 
-    with col2:
-        if st.button("➕ Add Row", key=f"add_payment_row_{client_name}"):
-            new_row = {col: '' for col in st.session_state[session_key].columns}
-            # set MONTH for new row to current month from session state
-            if 'MONTH' in new_row:
-                new_row['MONTH'] = st.session_state.start_date.strftime('%Y-%m')
-            st.session_state[session_key] = pd.concat(
-                [st.session_state[session_key], pd.DataFrame([new_row])],
-                ignore_index=True
-            )
-            st.rerun()
-    
-    # Editable data grid
-    edited_payment_data = st.data_editor(
-        st.session_state[session_key],
-        key=f"payment_data_editor_{client_name}",
-        use_container_width=True,
-        height=500,
-        num_rows="dynamic"
-    )
-    
-    # Update session state
-    st.session_state[session_key] = edited_payment_data
+    # Add Details form in an expander
+    with st.expander("➕ Add Details"):
+        with st.form(f"add_payment_details_{client_name}"):
+            new_vals = {}
+            for col in st.session_state[session_key].columns:
+                # Use text inputs for all fields to keep this generic
+                new_vals[col] = st.text_input(col)
+            submitted = st.form_submit_button("Add Record")
+            if submitted:
+                new_row = {col: new_vals.get(col, '') for col in st.session_state[session_key].columns}
+                # default MONTH if present
+                if 'MONTH' in new_row and not new_row['MONTH']:
+                    new_row['MONTH'] = st.session_state.start_date.strftime('%Y-%m')
+                st.session_state[session_key] = pd.concat(
+                    [st.session_state[session_key], pd.DataFrame([new_row])],
+                    ignore_index=True
+                )
+                st.success("✓ Record added")
+                st.rerun()
+
+    # Display read-only grid
+    st.dataframe(st.session_state[session_key], use_container_width=True, height=500)
+
+    # Deletion controls
+    if not st.session_state[session_key].empty:
+        # Build human-friendly labels for rows
+        def _row_label(i, row):
+            label_field = None
+            for cand in ['AGREEMENT NO', 'AGREEMENT ID', 'AGREEMENT', 'CIF NO']:
+                if cand in st.session_state[session_key].columns:
+                    label_field = cand
+                    break
+            label_val = str(row[label_field]) if label_field else str(i)
+            return f"{i} - {label_val}"
+
+        options = [_row_label(i, st.session_state[session_key].iloc[i]) for i in range(len(st.session_state[session_key]))]
+        to_delete = st.multiselect("Select rows to delete", options, key=f"delete_payment_rows_{client_name}")
+        if st.button("🗑️ Delete Selected", key=f"delete_payment_btn_{client_name}"):
+            if to_delete:
+                # parse indices and drop
+                indices = [int(x.split(' - ')[0]) for x in to_delete]
+                st.session_state[session_key] = st.session_state[session_key].drop(index=indices).reset_index(drop=True)
+                st.success(f"✓ Deleted {len(indices)} row(s)")
+                st.rerun()
     
     col1, col2, col3 = st.columns(3)
     
@@ -1293,30 +1331,50 @@ def ptp_list_tab_enbd(client_name="ENBD"):
         })
     
     col1, col2 = st.columns([3, 1])
-    
+
     with col1:
-        st.markdown("**Edit PTP data directly below:**")
-    
-    with col2:
-        if st.button("➕ Add Row", key=f"add_ptp_row_{client_name}"):
-            new_row = {col: '' for col in st.session_state[session_key].columns}
-            st.session_state[session_key] = pd.concat(
-                [st.session_state[session_key], pd.DataFrame([new_row])],
-                ignore_index=True
-            )
-            st.rerun()
-    
-    # Editable data grid
-    edited_ptp_data = st.data_editor(
-        st.session_state[session_key],
-        key=f"ptp_data_editor_{client_name}",
-        use_container_width=True,
-        height=500,
-        num_rows="dynamic"
-    )
-    
-    # Update session state
-    st.session_state[session_key] = edited_ptp_data
+        st.markdown("**Manage PTP records (read-only grid).**")
+
+    # Add Details form in an expander
+    with st.expander("➕ Add Details"):
+        with st.form(f"add_ptp_details_{client_name}"):
+            new_vals = {}
+            for col in st.session_state[session_key].columns:
+                new_vals[col] = st.text_input(col)
+            submitted = st.form_submit_button("Add Record")
+            if submitted:
+                new_row = {col: new_vals.get(col, '') for col in st.session_state[session_key].columns}
+                if 'MONTH' in new_row and not new_row['MONTH']:
+                    new_row['MONTH'] = st.session_state.start_date.strftime('%Y-%m')
+                st.session_state[session_key] = pd.concat(
+                    [st.session_state[session_key], pd.DataFrame([new_row])],
+                    ignore_index=True
+                )
+                st.success("✓ Record added")
+                st.rerun()
+
+    # Display read-only grid
+    st.dataframe(st.session_state[session_key], use_container_width=True, height=500)
+
+    # Deletion controls
+    if not st.session_state[session_key].empty:
+        def _row_label(i, row):
+            label_field = None
+            for cand in ['AGREEMENT NO', 'AGREEMENT ID', 'CUSTOMER NO', 'AGREEMENT']:
+                if cand in st.session_state[session_key].columns:
+                    label_field = cand
+                    break
+            label_val = str(row[label_field]) if label_field else str(i)
+            return f"{i} - {label_val}"
+
+        options = [_row_label(i, st.session_state[session_key].iloc[i]) for i in range(len(st.session_state[session_key]))]
+        to_delete = st.multiselect("Select rows to delete", options, key=f"delete_ptp_rows_{client_name}")
+        if st.button("🗑️ Delete Selected", key=f"delete_ptp_btn_{client_name}"):
+            if to_delete:
+                indices = [int(x.split(' - ')[0]) for x in to_delete]
+                st.session_state[session_key] = st.session_state[session_key].drop(index=indices).reset_index(drop=True)
+                st.success(f"✓ Deleted {len(indices)} row(s)")
+                st.rerun()
     
     col1, col2, col3 = st.columns(3)
     
@@ -1368,30 +1426,50 @@ def ptp_list_tab_eib(client_name="EIB"):
         })
     
     col1, col2 = st.columns([3, 1])
-    
+
     with col1:
-        st.markdown("**Edit PTP data directly below:**")
-    
-    with col2:
-        if st.button("➕ Add Row", key=f"add_ptp_row_{client_name}"):
-            new_row = {col: '' for col in st.session_state[session_key].columns}
-            st.session_state[session_key] = pd.concat(
-                [st.session_state[session_key], pd.DataFrame([new_row])],
-                ignore_index=True
-            )
-            st.rerun()
-    
-    # Editable data grid
-    edited_ptp_data = st.data_editor(
-        st.session_state[session_key],
-        key=f"ptp_data_editor_{client_name}",
-        use_container_width=True,
-        height=500,
-        num_rows="dynamic"
-    )
-    
-    # Update session state
-    st.session_state[session_key] = edited_ptp_data
+        st.markdown("**Manage PTP records (read-only grid).**")
+
+    # Add Details form in an expander
+    with st.expander("➕ Add Details"):
+        with st.form(f"add_ptp_details_{client_name}"):
+            new_vals = {}
+            for col in st.session_state[session_key].columns:
+                new_vals[col] = st.text_input(col)
+            submitted = st.form_submit_button("Add Record")
+            if submitted:
+                new_row = {col: new_vals.get(col, '') for col in st.session_state[session_key].columns}
+                if 'MONTH' in new_row and not new_row['MONTH']:
+                    new_row['MONTH'] = st.session_state.start_date.strftime('%Y-%m')
+                st.session_state[session_key] = pd.concat(
+                    [st.session_state[session_key], pd.DataFrame([new_row])],
+                    ignore_index=True
+                )
+                st.success("✓ Record added")
+                st.rerun()
+
+    # Display read-only grid
+    st.dataframe(st.session_state[session_key], use_container_width=True, height=500)
+
+    # Deletion controls
+    if not st.session_state[session_key].empty:
+        def _row_label(i, row):
+            label_field = None
+            for cand in ['AGREEMENT NO', 'AGREEMENT ID', 'CUSTOMER NO', 'AGREEMENT']:
+                if cand in st.session_state[session_key].columns:
+                    label_field = cand
+                    break
+            label_val = str(row[label_field]) if label_field else str(i)
+            return f"{i} - {label_val}"
+
+        options = [_row_label(i, st.session_state[session_key].iloc[i]) for i in range(len(st.session_state[session_key]))]
+        to_delete = st.multiselect("Select rows to delete", options, key=f"delete_ptp_rows_{client_name}")
+        if st.button("🗑️ Delete Selected", key=f"delete_ptp_btn_{client_name}"):
+            if to_delete:
+                indices = [int(x.split(' - ')[0]) for x in to_delete]
+                st.session_state[session_key] = st.session_state[session_key].drop(index=indices).reset_index(drop=True)
+                st.success(f"✓ Deleted {len(indices)} row(s)")
+                st.rerun()
     
     col1, col2, col3 = st.columns(3)
     
