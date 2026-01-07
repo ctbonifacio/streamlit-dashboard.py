@@ -1133,13 +1133,16 @@ def payment_monitoring_tab_enbd(client_name="ENBD"):
     with col1:
         st.markdown("**Manage payment records (read-only grid).**")
 
-    # Add Details form in an expander
+    # Add Details form in an expander (compact 3-column layout)
     with st.expander("➕ Add Details"):
         with st.form(f"add_payment_details_{client_name}"):
             new_vals = {}
-            for col in st.session_state[session_key].columns:
-                # Use text inputs for all fields to keep this generic
-                new_vals[col] = st.text_input(col)
+            form_key_base = f"add_payment_{client_name}"
+            cols_input = st.columns(3)
+            for i, col in enumerate(st.session_state[session_key].columns):
+                c = cols_input[i % 3]
+                key = (f"{form_key_base}_{col}").replace(' ', '_')
+                new_vals[col] = c.text_input(col, key=key)
             submitted = st.form_submit_button("Add Record")
             if submitted:
                 new_row = {col: new_vals.get(col, '') for col in st.session_state[session_key].columns}
@@ -1234,13 +1237,16 @@ def payment_monitoring_tab_eib(client_name="EIB"):
     with col1:
         st.markdown("**Manage payment records (read-only grid).**")
 
-    # Add Details form in an expander
+    # Add Details form in an expander (compact 3-column layout)
     with st.expander("➕ Add Details"):
         with st.form(f"add_payment_details_{client_name}"):
             new_vals = {}
-            for col in st.session_state[session_key].columns:
-                # Use text inputs for all fields to keep this generic
-                new_vals[col] = st.text_input(col)
+            form_key_base = f"add_payment_{client_name}"
+            cols_input = st.columns(3)
+            for i, col in enumerate(st.session_state[session_key].columns):
+                c = cols_input[i % 3]
+                key = (f"{form_key_base}_{col}").replace(' ', '_')
+                new_vals[col] = c.text_input(col, key=key)
             submitted = st.form_submit_button("Add Record")
             if submitted:
                 new_row = {col: new_vals.get(col, '') for col in st.session_state[session_key].columns}
@@ -1335,12 +1341,16 @@ def ptp_list_tab_enbd(client_name="ENBD"):
     with col1:
         st.markdown("**Manage PTP records (read-only grid).**")
 
-    # Add Details form in an expander
+    # Add Details form in an expander (compact 3-column layout)
     with st.expander("➕ Add Details"):
         with st.form(f"add_ptp_details_{client_name}"):
             new_vals = {}
-            for col in st.session_state[session_key].columns:
-                new_vals[col] = st.text_input(col)
+            form_key_base = f"add_ptp_{client_name}"
+            cols_input = st.columns(3)
+            for i, col in enumerate(st.session_state[session_key].columns):
+                c = cols_input[i % 3]
+                key = (f"{form_key_base}_{col}").replace(' ', '_')
+                new_vals[col] = c.text_input(col, key=key)
             submitted = st.form_submit_button("Add Record")
             if submitted:
                 new_row = {col: new_vals.get(col, '') for col in st.session_state[session_key].columns}
@@ -1430,12 +1440,16 @@ def ptp_list_tab_eib(client_name="EIB"):
     with col1:
         st.markdown("**Manage PTP records (read-only grid).**")
 
-    # Add Details form in an expander
+    # Add Details form in an expander (compact 3-column layout)
     with st.expander("➕ Add Details"):
         with st.form(f"add_ptp_details_{client_name}"):
             new_vals = {}
-            for col in st.session_state[session_key].columns:
-                new_vals[col] = st.text_input(col)
+            form_key_base = f"add_ptp_{client_name}"
+            cols_input = st.columns(3)
+            for i, col in enumerate(st.session_state[session_key].columns):
+                c = cols_input[i % 3]
+                key = (f"{form_key_base}_{col}").replace(' ', '_')
+                new_vals[col] = c.text_input(col, key=key)
             submitted = st.form_submit_button("Add Record")
             if submitted:
                 new_row = {col: new_vals.get(col, '') for col in st.session_state[session_key].columns}
